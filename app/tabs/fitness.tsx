@@ -17,7 +17,7 @@ const workoutBeforeChoices = ["Never", "Occasionally", "Regularly"]
 const dayChoices = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 const equipmentChoices = ["Bench", "Barbell", "Dumbbells", "Bands", "Weighted Ball", "Balance Ball"]
 
-export default function Index() {
+export default function Fitness() {
   const [height, setHeight] = useState("");
   const [weight, setWeight] = useState("");
 

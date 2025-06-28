@@ -8,7 +8,7 @@ import {
   Image,
 } from "react-native";
 
-export default function Index() {
+export default function Calendar() {
   const month = "June"
   const prevMonthLength = 31
   const monthLength = 30
