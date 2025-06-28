@@ -8,9 +8,9 @@ import {
   Image,
 } from "react-native";
 
-export default function Index() {
+export default function Diet() {
   return (
-    <View style={{alignItems: "center"}}><Text style={styles.bigText}>Points Tab</Text></View>
+    <View style={{alignItems: "center"}}><Text style={styles.bigText}>Diet Tab</Text></View>
   );
 }
 
