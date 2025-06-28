@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "expo-router";
 import { Alert } from "react-native";
 import * as ScreenOrientation from 'expo-screen-orientation';
@@ -54,42 +54,42 @@ export default function Workout() {
   const formattedTime = `${minutes}:${secs.toString().padStart(2, '0')}`;
 
   return (
-    <View style={styles.main}>
-      <TouchableOpacity
-        onPress={() => {
-          Alert.alert(
-            "Are you sure?",
-            "Do you really want to exit your workout?",
-            [
-              {
-                text: "Cancel",
-                style: "cancel",
-              },
-              {
-                text: "Yes",
-                onPress: () => router.push("/tabs/fitness"),
-              },
-            ],
-            { cancelable: true }
-          );
-        }}
-      >
-        <Image
-          source={require('../assets/images/home-icon.png')}
-          style={{width: 55, height: 55}}
-        />
-      </TouchableOpacity>
-
-      <View style={{flex: 1, justifyContent: "center", alignItems: "center"}}>
-        <Text style={[styles.timerText, {color: isWorkout ? "darkred" : "lightgreen"}]}>{formattedTime}</Text>
-        <TouchableOpacity onPress={() => {setIsStarted(!isStarted)}}>
+      <View style={styles.main}>
+        <TouchableOpacity
+            onPress={() => {
+              Alert.alert(
+                  "Are you sure?",
+                  "Do you really want to exit your workout?",
+                  [
+                    {
+                      text: "Cancel",
+                      style: "cancel",
+                    },
+                    {
+                      text: "Yes",
+                      onPress: () => router.push("/tabs/fitness"),
+                    },
+                  ],
+                  { cancelable: true }
+              );
+            }}
+        >
           <Image
-            source={isStarted ? require('../assets/images/pause.png') : require('../assets/images/start.png')}
-            style={{width: 55, height: 55}}
+              source={require('../assets/images/home-icon.png')}
+              style={{width: 55, height: 55}}
           />
         </TouchableOpacity>
+
+        <View style={{flex: 1, justifyContent: "center", alignItems: "center"}}>
+          <Text style={[styles.timerText, {color: isWorkout ? "darkred" : "lightgreen"}]}>{formattedTime}</Text>
+          <TouchableOpacity onPress={() => {setIsStarted(!isStarted)}}>
+            <Image
+                source={isStarted ? require('../assets/images/pause.png') : require('../assets/images/start.png')}
+                style={{width: 55, height: 55}}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
   );
 }
 
