@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -29,7 +29,7 @@ export default function Index() {
   const [selectedDays, setSelectedDays] = useState([]);
   const [selectedEquipment, setSelectedEquipment] = useState([]);
 
-  const addChoice = (index, list, setList) => {
+  const addChoice = (index: number, list: any[], setList: { (value: React.SetStateAction<never[]>): void; (value: React.SetStateAction<never[]>): void; (value: React.SetStateAction<never[]>): void; (arg0: any[]): void; }) => {
     if (list.includes(index)) {
       setList(list.filter(i => i !== index));
     } else {
