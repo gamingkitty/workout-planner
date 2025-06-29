@@ -37,6 +37,7 @@ export default function Index() {
 
   const { month: prevMonth, year: prevYear } = getPrevMonth(currMonth, currYear)
   const { month: nextMonth, year: nextYear } = getNextMonth(currMonth, currYear)
+  const [selectedDay, setSelectedDay] = useState(0)
 
   const prevMonthLen = getMonthLen(prevMonth, prevYear)
   const currMonthLen = getMonthLen(currMonth, currYear)
@@ -44,6 +45,11 @@ export default function Index() {
   const firstDayOffset = firstDayOfMonth.getDay()
 
   const dayObjs = []
+
+  const isSameDate = (date1: Date, date2: Date) =>
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate();
 
   for (let i = 0; i < firstDayOffset; i++) {
     dayObjs.push(new Date(prevYear, prevMonth, prevMonthLen - firstDayOffset + i + 1))
@@ -58,33 +64,32 @@ export default function Index() {
     dayObjs.push(new Date(nextYear, nextMonth, i))
   }
 
+  const calendarHeight = 50 * dayObjs.length / 7
 
   return (
-    <View>
+    <View style={styles.main}>
       <View style={{alignItems: "center", justifyContent: "center"}}>
         <Text style={styles.bigText}>{monthName}</Text>
         <View style={styles.weekDays}>
+          <View style={styles.weekDayTextWrapper}><Text style={styles.weekDayText}>Sun.</Text></View>
           <View style={styles.weekDayTextWrapper}><Text style={styles.weekDayText}>Mon.</Text></View>
           <View style={styles.weekDayTextWrapper}><Text style={styles.weekDayText}>Tue.</Text></View>
           <View style={styles.weekDayTextWrapper}><Text style={styles.weekDayText}>Wed.</Text></View>
           <View style={styles.weekDayTextWrapper}><Text style={styles.weekDayText}>Thu.</Text></View>
           <View style={styles.weekDayTextWrapper}><Text style={styles.weekDayText}>Fri.</Text></View>
           <View style={styles.weekDayTextWrapper}><Text style={styles.weekDayText}>Sat.</Text></View>
-          <View style={styles.weekDayTextWrapper}><Text style={styles.weekDayText}>Sun.</Text></View>
         </View>
       </View>
 
-      <View style={styles.calendar}>
+      <View style={[styles.calendar, {height: calendarHeight}]}>
         {dayObjs.map((dayObj, index) => (
-            <View key={index} style={styles.calendarDay}>
-              {dayObj.getDate() === new Date().getDate() && dayObj.getMonth() === currMonth ? (
-                  <View style={styles.highlightDay}>
-                    <Text style={[styles.text, { color: 'white' }]}>{dayObj.getDate()}</Text>
-                  </View>
-              ) : (
-                  <Text style={styles.text}>{dayObj.getDate()}</Text>
+            <TouchableOpacity key={index} style={styles.calendarDay} onPress={() => {setSelectedDay(index)}}>
+              {(
+                <View style={[isSameDate(dayObj, today) ? styles.highlightDay : styles.nothing, selectedDay == index ? styles.selectedDay : styles.nothing]}>
+                  <Text style={[styles.text, isSameDate(dayObj, today) ? {color: "white"} : styles.nothing]}>{dayObj.getDate()}</Text>
+                </View>
               )}
-            </View>
+            </TouchableOpacity>
         ))}
       </View>
     </View>
@@ -92,10 +97,12 @@ export default function Index() {
 }
 
 const styles = StyleSheet.create({
+  main: {
+      flex: 1,
+  },
   calendar: {
     flexDirection: "row",
     flexWrap: "wrap",
-    height: 300,
     borderBottomWidth: 1,
     borderTopWidth: 1,
   },
@@ -104,6 +111,16 @@ const styles = StyleSheet.create({
     height: 50,
     justifyContent: "center",
     alignItems: "center",
+  },
+  selectedDay: {
+    width: 36,
+    height: 36,
+    borderWidth: 1,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  nothing: {
   },
   highlightDay: {
     width: 36,
