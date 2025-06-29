@@ -62,10 +62,12 @@ const workoutTime = 60;
 const breakTime = 30;
 const circuitLoops = 2;
 
+const initialReadyTime = 10;
+
 export default function Workout() {
-  const [seconds, setSeconds] = useState(workoutTime);
+  const [seconds, setSeconds] = useState(initialReadyTime);
   const [isStarted, setIsStarted] = useState(false);
-  const [isWorkout, setIsWorkout] = useState(true);
+  const [isWorkout, setIsWorkout] = useState(false);
   const [currentCircuit, setCurrentCircuit] = useState(0);
   const [currentExercise, setCurrentExercise] = useState(0);
   const [currentCircuitLoop, setCurrentCircuitLoop] = useState(0);
