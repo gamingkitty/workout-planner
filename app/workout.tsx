@@ -57,8 +57,8 @@ const circuits = [
     ]
   ]
 ];
-const workoutTime = 60;
-const breakTime = 30;
+const workoutTime = 5;
+const breakTime = 3;
 const circuitLoops = 2;
 
 export default function Workout() {
@@ -69,106 +69,125 @@ export default function Workout() {
   const [currentExercise, setCurrentExercise] = useState(0);
   const [currentCircuitLoop, setCurrentCircuitLoop] = useState(0);
   const router = useRouter();
+  const slideY = useRef(new Animated.Value(0)).current;
+
+  const switchExercise = () => {
+    const height = Dimensions.get('window').height;
+    Animated.timing(slideY, {
+      toValue: height,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      setCurrentExercise(ex => {
+        const next = ex + 1;
+        if (next >= circuits[currentCircuit].length) {
+          setCurrentCircuitLoop(loop => {
+            const nextLoop = loop + 1;
+            if (nextLoop >= circuitLoops) {
+              setIsStarted(false); // Add circuit screen later
+              setCurrentCircuit(c => (c + 1 >= circuits.length ? 0 : c + 1));
+              return 0;
+            }
+            return nextLoop;
+          });
+          return 0;
+        }
+        return next;
+      });
+
+      slideY.setValue(-height);
+
+      Animated.timing(slideY, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => {
+        setIsWorkout(false);
+        setSeconds(breakTime);
+      });
+    });
+  };
 
   useEffect(() => {
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
-
     return () => {
       ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
     };
   }, []);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-
+    let interval;
     if (isStarted) {
       interval = setInterval(() => {
-        setSeconds(prevSeconds => {
-          if (prevSeconds - 1 <= 0) {
+        setSeconds(prev => {
+          if (prev - 1 <= 0) {
             if (isWorkout) {
-              setCurrentExercise(prevExercise => {
-                if (prevExercise + 1 >= circuits[currentCircuit].length) {
-                  setCurrentCircuitLoop(prevCircuitLoop => {
-                    if (prevCircuitLoop + 1 >= circuitLoops) {
-                      setIsStarted(false); // Instead of just pausing here, it should go to a screen overviewing the circuit and equipment needed to set it up.
-                      setCurrentCircuit(prev => {
-                        return prev + 1 >= circuits.length ? 0 : prev + 1; // Currently just loops, should be made to go to a finish screen or something later
-                      });
-                      return 0;
-                    }
-                    return prevCircuitLoop + 1;
-                  })
-                  return 0;
-                }
-                return prevExercise + 1;
-              })
+              switchExercise();
+            } else {
+              setIsWorkout(true);
+              return workoutTime;
             }
-            setIsWorkout(prev => !prev);
-            return isWorkout ? breakTime : workoutTime;
+            return 0;
           }
-          return prevSeconds - 1;
+          return prev - 1;
         });
       }, 1000);
     }
-
     return () => clearInterval(interval);
-  }, [isStarted, isWorkout]);
+  }, [isStarted, isWorkout, currentCircuit]);
 
   const minutes = Math.floor(seconds / 60);
   const secs = seconds % 60;
   const formattedTime = `${minutes}:${secs.toString().padStart(2, '0')}`;
 
   return (
-      <View style={styles.main}>
-        <TouchableOpacity
-            onPress={() => {
-              Alert.alert(
-                  "Are you sure?",
-                  "Do you really want to exit your workout?",
-                  [
-                    {
-                      text: "Cancel",
-                      style: "cancel",
-                    },
-                    {
-                      text: "Yes",
-                      onPress: () => router.push("/tabs/fitness"),
-                    },
-                  ],
-                  { cancelable: true }
-              );
-            }}
-            style={styles.homeButton}
-        >
-          <Image
-              source={require('../assets/images/home-icon.png')}
-              style={{width: 50, height: 50}}
-          />
-        </TouchableOpacity>
+    <View style={styles.main}>
+      <TouchableOpacity
+        onPress={() => {
+          Alert.alert(
+            "Are you sure?",
+            "Do you really want to exit your workout?",
+            [
+              { text: "Cancel", style: "cancel" },
+              { text: "Yes", onPress: () => router.push("/tabs/fitness") },
+            ],
+            { cancelable: true }
+          );
+        }}
+        style={styles.homeButton}
+      >
+        <Image source={require('../assets/images/home-icon.png')} style={{ width: 50, height: 50 }} />
+      </TouchableOpacity>
 
-        <View style={{flex: 1, flexDirection: "row", justifyContent: "center", alignItems: "center"}}>
-          <View style={{alignItems: "center"}}>
-            <Text style={[styles.timerText, {color: isWorkout ? "darkred" : "lightgreen"}]}>{formattedTime}</Text>
-            <TouchableOpacity onPress={() => {setIsStarted(!isStarted)}}>
-              <Image
-                  source={isStarted ? require('../assets/images/pause.png') : require('../assets/images/start.png')}
-                  style={{width: 70, height: 70}}
-              />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.exerciseInfo}>
-            {!isWorkout && (
-              <Text style={{fontSize: 32}}>Up Next:</Text>
-            )}
-            <Text style={styles.exerciseTitle}>{circuits[currentCircuit][currentExercise][0]}</Text>
-            <Text style={{fontSize: 18, maxWidth: 350, marginBottom: 10}}>{circuits[currentCircuit][currentExercise][2]}</Text>
-            <Text style={{fontSize: 24}}>Equipment:</Text>
-            {circuits[currentCircuit][currentExercise][1].map((equipment, index) => (
-                <Text style={{fontSize: 18, maxWidth: 350}} key={index}>- {equipment}</Text>
-            ))}
-          </View>
+      <View style={styles.workoutInfo}>
+        <View style={styles.timer}>
+          <Text style={[styles.timerText, { color: isWorkout ? "darkred" : "lightgreen" }]}>
+            {formattedTime}
+          </Text>
+          <TouchableOpacity onPress={() => setIsStarted(!isStarted)}>
+            <Image
+              source={isStarted ? require('../assets/images/pause.png') : require('../assets/images/start.png')}
+              style={{ width: 70, height: 70 }}
+            />
+          </TouchableOpacity>
         </View>
+
+        <Animated.View style={[styles.exerciseInfo, { transform: [{ translateY: slideY }] }]}>
+          <Text style={styles.exerciseTitle}>
+            {circuits[currentCircuit][currentExercise][0]}
+          </Text>
+          <Text style={{ fontSize: 18, maxWidth: 380, marginBottom: 10 }}>
+            {circuits[currentCircuit][currentExercise][2]}
+          </Text>
+          <Text style={{ fontSize: 24 }}>Equipment:</Text>
+          {circuits[currentCircuit][currentExercise][1].map((equipment, i) => (
+            <Text key={i} style={{ fontSize: 18, maxWidth: 380}}>
+              - {equipment}
+            </Text>
+          ))}
+        </Animated.View>
       </View>
+    </View>
   );
 }
 
@@ -182,18 +201,30 @@ const styles = StyleSheet.create({
     fontSize: 160,
   },
   exerciseInfo: {
-    marginLeft: 60,
-    height: "100%",
+    marginLeft: 30,
     justifyContent: "center",
   },
   exerciseTitle: {
-    fontSize: 60,
+    fontSize: 55,
     color: "black",
-    maxWidth: 420,
+    width: 380,
   },
   homeButton: {
     position: "absolute",
     left: 10,
     top: 8,
+  },
+  workoutInfo: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  timer: {
+    alignItems: "center",
+    backgroundColor: "white",
+    elevation: 5,
+    padding: 20,
+    borderRadius: 16,
   },
 });
