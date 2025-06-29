@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "expo-router";
 import { Alert } from "react-native";
 import * as ScreenOrientation from 'expo-screen-orientation';
+import { Audio } from 'expo-av';
 import {
   View,
   Text,
@@ -57,8 +58,8 @@ const circuits = [
     ]
   ]
 ];
-const workoutTime = 5;
-const breakTime = 3;
+const workoutTime = 60;
+const breakTime = 30;
 const circuitLoops = 2;
 
 export default function Workout() {
@@ -68,8 +69,16 @@ export default function Workout() {
   const [currentCircuit, setCurrentCircuit] = useState(0);
   const [currentExercise, setCurrentExercise] = useState(0);
   const [currentCircuitLoop, setCurrentCircuitLoop] = useState(0);
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
   const router = useRouter();
   const slideY = useRef(new Animated.Value(0)).current;
+
+  async function playSound(asset, volume) {
+    const { sound } = await Audio.Sound.createAsync(asset);
+    await sound.setVolumeAsync(volume);
+    setSound(sound);
+    await sound.playAsync();
+  }
 
   const switchExercise = () => {
     const height = Dimensions.get('window').height;
@@ -122,9 +131,11 @@ export default function Workout() {
         setSeconds(prev => {
           if (prev - 1 <= 0) {
             if (isWorkout) {
+              playSound(require("../assets/audio/complete.mp3"), 1.0)
               switchExercise();
             } else {
               setIsWorkout(true);
+              playSound(require("../assets/audio/start.mp3"), 0.6)
               return workoutTime;
             }
             return 0;
@@ -135,6 +146,14 @@ export default function Workout() {
     }
     return () => clearInterval(interval);
   }, [isStarted, isWorkout, currentCircuit]);
+
+  useEffect(() => {
+    return () => {
+      if (sound) {
+        sound.unloadAsync();
+      }
+    };
+  }, [sound]);
 
   const minutes = Math.floor(seconds / 60);
   const secs = seconds % 60;
