@@ -5,7 +5,7 @@ import {
   StyleSheet,
   Animated,
   TouchableOpacity,
-  Image,
+  Image, Modal, FlatList, Button,
 } from "react-native";
 
 const monthIdx = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
@@ -27,6 +27,12 @@ function getPrevMonth(month: number, year: number) {
 function getNextMonth(month: number, year: number) {
   if (month === 11) return { month: 0, year: year + 1 };
   return { month: month + 1, year };
+}
+
+const WORKOUTS: {[date: string]: string[]} = {
+  "2025-06-15": ["Chest & Triceps", "Pushups & Bench Press"],
+  "2025-06-22": ["Cardio", "5k Run"],
+  "2025-06-28": ["Leg day", "Box Jumps & Weighted Squats"]
 }
 
 export default function Index() {
@@ -58,35 +64,86 @@ export default function Index() {
     dayObjs.push(new Date(nextYear, nextMonth, i))
   }
 
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const onDayPress = (day: Date) => {
+    setSelectedDate(day);
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+    setSelectedDate(null);
+  };
+
+  // helper to format YYYY‑MM‑DD
+  const fmt = (d: Date) =>
+      `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
+
+  const workoutsOnDate = selectedDate ? WORKOUTS[fmt(selectedDate)] || [] : []
 
   return (
-    <View>
-      <View style={{alignItems: "center", justifyContent: "center"}}>
-        <Text style={styles.bigText}>{monthName}</Text>
+    <View style={{flex: 1}}>
+      <View style={{alignItems: "center", marginVertical: 16}}>
+        <Text style={styles.bigText}>{monthName} {currYear}</Text>
         <View style={styles.weekDays}>
-          <View style={styles.weekDayTextWrapper}><Text style={styles.weekDayText}>Mon.</Text></View>
-          <View style={styles.weekDayTextWrapper}><Text style={styles.weekDayText}>Tue.</Text></View>
-          <View style={styles.weekDayTextWrapper}><Text style={styles.weekDayText}>Wed.</Text></View>
-          <View style={styles.weekDayTextWrapper}><Text style={styles.weekDayText}>Thu.</Text></View>
-          <View style={styles.weekDayTextWrapper}><Text style={styles.weekDayText}>Fri.</Text></View>
-          <View style={styles.weekDayTextWrapper}><Text style={styles.weekDayText}>Sat.</Text></View>
-          <View style={styles.weekDayTextWrapper}><Text style={styles.weekDayText}>Sun.</Text></View>
+          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+            <View key={day} style={styles.weekDayTextWrapper}>
+              <Text style={styles.weekDayText}>{day}</Text>
+            </View>
+          ))}
         </View>
       </View>
 
       <View style={styles.calendar}>
-        {dayObjs.map((dayObj, index) => (
-            <View key={index} style={styles.calendarDay}>
-              {dayObj.getDate() === new Date().getDate() && dayObj.getMonth() === currMonth ? (
-                  <View style={styles.highlightDay}>
-                    <Text style={[styles.text, { color: 'white' }]}>{dayObj.getDate()}</Text>
-                  </View>
-              ) : (
-                  <Text style={styles.text}>{dayObj.getDate()}</Text>
-              )}
-            </View>
-        ))}
+        {dayObjs.map((dayObj, index) => {
+          const key = fmt(dayObj)
+          const isToday = dayObj.getDate() === today.getDate() &&dayObj.getMonth() === currMonth && dayObj.getFullYear() === currYear
+          const hasEvents = WORKOUTS[key]
+          const lift = hasEvents ? 10 : 0
+          return (
+            <TouchableOpacity key={index} style={styles.calendarDay} onPress={() => onDayPress(dayObj)}>
+              <View style={styles.dateContainer}>
+                {isToday ? (
+                    <View style={styles.highlightDay}>
+                      <Text style={[styles.text, {color: 'white'}]}>{dayObj.getDate()}</Text>
+                    </View>
+                ) : (
+                    <View style={styles.normalDay}>
+                      <Text style={styles.text}>{dayObj.getDate()}</Text>
+                    </View>
+                )}
+                {hasEvents && <View style={styles.dotIndicator}/>}
+              </View>
+            </TouchableOpacity>
+          )
+      })}
       </View>
+
+      <Modal visible={modalVisible} animationType="slide" transparent={true} onRequestClose={closeModal}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>
+              {selectedDate ? fmt(selectedDate) : ""}
+            </Text>
+
+            {workoutsOnDate.length > 0 ? (
+                <FlatList
+                    data={workoutsOnDate}
+                    keyExtractor={(item, index) => `${index}-${item}`}
+                    renderItem={({item}) => (
+                        <Text style={styles.workoutText}>–{item}</Text>
+                    )}
+                />
+            ) : (
+                <Text style={styles.workoutText}>No Workouts Scheduled Today!</Text>
+            )}
+
+            <Button title="Close" onPress={closeModal}/>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -95,15 +152,25 @@ const styles = StyleSheet.create({
   calendar: {
     flexDirection: "row",
     flexWrap: "wrap",
-    height: 300,
     borderBottomWidth: 1,
     borderTopWidth: 1,
   },
   calendarDay: {
-    width: "14.2857%",
-    height: 50,
+    width: `${100/7}%`,
+    height: 60,
     justifyContent: "center",
     alignItems: "center",
+  },
+  dateContainer: {
+    alignItems: "center",
+    height: 43,
+    justifyContent: "space-between"
+  },
+  dotIndicator: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "blue",
   },
   highlightDay: {
     width: 36,
@@ -113,15 +180,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  normalDay: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   weekDays: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    width: "100%",
     borderTopWidth: 1,
+    borderBottomWidth: 1
   },
   weekDayTextWrapper: {
-    width: "14.2857%",
+    flex: 1,
     alignItems: "center",
+    paddingVertical: 4
   },
   weekDayText: {
     fontSize: 18,
@@ -129,10 +204,32 @@ const styles = StyleSheet.create({
   },
   bigText: {
     fontSize: 40,
+    fontWeight: "bold",
     color: "black",
   },
   text: {
     fontSize: 24,
     color: "black",
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    padding: 20
+  },
+  modalContent: {
+    backgroundColor: "white",
+    borderRadius: 8,
+    padding: 16,
+    maxHeight: "80%"
+  },
+  modalTitle: {
+    fontSize: 20,
+    marginBottom: 12,
+    textAlign: "center"
+  },
+  workoutText: {
+    fontSize: 16,
+    marginVertical: 4
+  }
 });
