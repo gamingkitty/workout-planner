@@ -58,7 +58,7 @@ export default function TabsLayout() {
         </View>
       </View>
 
-        <Slot/>
+      <Slot/>
 
       <Animated.View style={[styles.menu, {left: menuAnim}]}>
         <View style={styles.banner}>
@@ -78,37 +78,36 @@ export default function TabsLayout() {
         </View>
       </Animated.View>
 
-        <Animated.View pointerEvents={menuVisible ? "auto" : "none"} style={[styles.grayOut, {opacity: grayAnim}]}/>
+      <Animated.View pointerEvents={menuVisible ? "auto" : "none"} style={[styles.grayOut, {opacity: grayAnim}]}/>
 
-        <View style={styles.footer}>
-          <TouchableOpacity style={styles.footerButton} onPress={() => router.push("/tabs/calendar")}>
-            <Image
-              source={require('../../assets/images/calendar-icon.jpg')}
-              style={styles.footerIcon}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.footerButton} onPress={() => router.push("/tabs/fitness")}>
-            <Image
-              source={require('../../assets/images/dumbell.png')}
-              style={styles.footerIcon}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.footerButton} onPress={() => router.push("/tabs/diet")}>
-            <Image
-              source={require('../../assets/images/food.png')}
-              style={styles.footerIcon}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.footerButton} onPress={() => router.push("/tabs/points")}>
-            <Image
-              source={require('../../assets/images/shop.png')}
-              style={styles.footerIcon}
-            />
-          </TouchableOpacity>
-        </View>
-        <View style={{position: "absolute", bottom: 0, left: 0, right: 0, height: 50, backgroundColor: "gray"}}></View>
+      <View style={styles.footer}>
+        <TouchableOpacity style={styles.footerButton} onPress={() => router.push("/tabs/calendar")}>
+          <Image
+            source={require('../../assets/images/calendar-icon.jpg')}
+            style={styles.footerIcon}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.footerButton} onPress={() => router.push("/tabs/fitness")}>
+          <Image
+            source={require('../../assets/images/dumbell.png')}
+            style={styles.footerIcon}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.footerButton} onPress={() => router.push("/tabs/diet")}>
+          <Image
+            source={require('../../assets/images/food.png')}
+            style={styles.footerIcon}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.footerButton} onPress={() => router.push("/tabs/points")}>
+          <Image
+            source={require('../../assets/images/shop.png')}
+            style={styles.footerIcon}
+          />
+        </TouchableOpacity>
       </View>
-    </AppProvider>
+      <View style={{position: "absolute", bottom: 0, left: 0, right: 0, height: 50, backgroundColor: "gray"}}></View>
+    </View>
   );
 }
 
