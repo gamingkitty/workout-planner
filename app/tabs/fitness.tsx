@@ -9,154 +9,92 @@ import {
   TextInput,
   ScrollView,
 } from "react-native";
+import { useAppContext } from '../AppContext';
 
-const sexChoices = ["Male", "Female", "Other"];
-const goalChoices = ["Lose Weight", "Build Muscle", "Improve Endurance", "Increase Flexibility", "Maintain Current Fitness", "Train for a Sport/Event"]
-const fitnessLevelChoices = ["Beginner", "Intermediate", "Advanced"]
-const workoutBeforeChoices = ["Never", "Occasionally", "Regularly"]
-const dayChoices = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-const equipmentChoices = ["Bench", "Barbell", "Dumbbells", "Bands", "Weighted Ball", "Balance Ball"]
+function getFormattedDate(date: Date): string {
+  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
+  const day = date.getDate();
+  const daySuffix =
+    day % 10 === 1 && day !== 11 ? "st" :
+    day % 10 === 2 && day !== 12 ? "nd" :
+    day % 10 === 3 && day !== 13 ? "rd" : "th";
+
+  const formatted = `${months[date.getMonth()]} ${day}${daySuffix}, ${days[date.getDay()]}`;
+  return formatted;
+}
+
+function formatTime24to12(timeStr: string): string {
+  const [hourStr, minuteStr] = timeStr.split(":");
+  let hour = parseInt(hourStr);
+  const minute = parseInt(minuteStr);
+
+  const period = hour >= 12 ? "PM" : "AM";
+  hour = hour % 12 || 12;
+
+  return `${hour}:${minute.toString().padStart(2, "0")} ${period}`;
+}
 
 export default function Fitness() {
-  const [height, setHeight] = useState("");
-  const [weight, setWeight] = useState("");
+  const {workouts, setWorkouts} = useAppContext();
 
-  const [selectedSex, setSelectedSex] = useState(null);
-  const [selectedFitnessLevel, setSelectedFitnessLevel] = useState(null);
-  const [selectedWorkoutBefore, setSelectedWorkoutBefore] = useState(null);
-
-  const [selectedGoals, setSelectedGoals] = useState([]);
-  const [selectedDays, setSelectedDays] = useState([]);
-  const [selectedEquipment, setSelectedEquipment] = useState([]);
-
-  const addChoice = (index: number, list: any[], setList: { (value: React.SetStateAction<never[]>): void; (value: React.SetStateAction<never[]>): void; (value: React.SetStateAction<never[]>): void; (arg0: any[]): void; }) => {
-    if (list.includes(index)) {
-      setList(list.filter(i => i !== index));
-    } else {
-      setList([...list, index]);
-    }
+  const toggleDropdown = (index: number) => {
+    setDropdownStates(prev =>
+      prev.map((open, i) => (i === index ? !open : open))
+    );
   };
+
+  const sortedWorkouts = workouts.slice().sort((a, b) => {
+    const dateA = new Date(a.date);
+    const dateB = new Date(b.date);
+    return dateB.getTime() - dateA.getTime();
+  });
+
+  const [dropdownStates, setDropdownStates] = useState<boolean[]>(() => sortedWorkouts.map(() => false));
 
   return (
     <ScrollView style={styles.main}>
-      <View style={styles.bannerWrapper}>
-        <Text style={[styles.text, {textAlign: "center"}]}>Help Us Create The Perfect Workout Plan For You</Text>
+      <View style={{alignItems: "center",}}>
+        <TouchableOpacity style={styles.createWorkoutButton}>
+          <Text style={{fontSize: 32, color: "black"}}>Create Workout</Text>
+        </TouchableOpacity>
       </View>
-      <View style={styles.section}>
-        <Text style={styles.sectionText}>Basic Information</Text>
-        <View style={styles.question}>
-          <Text style={styles.questionText}>What is your height and weight?</Text>
-          <TextInput style={styles.choice} keyboardType="numeric" value={height} onChangeText={setHeight} placeholder="Enter your height (cm)"/>
-          <TextInput style={styles.choice} keyboardType="numeric" value={weight} onChangeText={setWeight} placeholder="Enter your weight (kg)"/>
-        </View>
-        <View style={styles.question}>
-          <Text style={styles.questionText}>What is your biological sex?</Text>
-          {sexChoices.map((choice, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.choice,
-                selectedSex === index && styles.choiceSelected,
-              ]}
-              onPress={() => setSelectedSex(index)}
-            >
-              <Text style={styles.choiceText}>{choice}</Text>
+      <View style={styles.workoutsContainer}>
+        <Text style={{fontSize: 32}}>Upcoming Workouts</Text>
+        {sortedWorkouts.map((workout, index) => (
+          <View key={index} style={styles.workout}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+              <Text style={{ fontSize: 32 }}>{workout.name}</Text>
+              <Text style={{ fontSize: 20 }}>{formatTime24to12(workout.time)}</Text>
+            </View>
+            <Text style={{ fontSize: 20 }}>{getFormattedDate(new Date(workout.date))}</Text>
+            <TouchableOpacity onPress={() => toggleDropdown(index)} style={styles.header}>
+              <Text style={{fontSize: 20}}>Exercises {dropdownStates[index] ? '▲' : '▼'}</Text>
             </TouchableOpacity>
-          ))}
-        </View>
-       </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionText}>Fitness Goals</Text>
-        <View style={styles.question}>
-          <Text style={styles.questionText}>What is your primary fitness goal? (Select one or more)</Text>
-          {goalChoices.map((choice, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.choice,
-                selectedGoals.includes(index) && styles.choiceSelected,
-              ]}
-              onPress={() => addChoice(index, selectedGoals, setSelectedGoals)}
-            >
-              <Text style={styles.choiceText}>{choice}</Text>
+            {dropdownStates[index] && (
+              <View>
+                {workout.circuit.map((circuit, index) => (
+                  <View key={index}>
+                    {circuit.exercises.map((exercise, index2) => (
+                      <Text key={index2}>– {exercise[0]}</Text>
+                    ))}
+                  </View>
+                ))}
+              </View>
+            )}
+            <TouchableOpacity style={{position: "absolute", bottom: 10, right: 10}}>
+              <Image
+                source={require('../../assets/images/start-workout.png')}
+                style={{width: 50, height: 50}}
+              />
             </TouchableOpacity>
-          ))}
-        </View>
+          </View>
+        ))}
       </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionText}>Experience Level</Text>
-        <View style={styles.question}>
-          <Text style={styles.questionText}>How would you rate your current fitness level?</Text>
-          {fitnessLevelChoices.map((choice, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.choice,
-                selectedFitnessLevel === index && styles.choiceSelected,
-              ]}
-              onPress={() => setSelectedFitnessLevel(index)}
-            >
-              <Text style={styles.choiceText}>{choice}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-        <View style={styles.question}>
-          <Text style={styles.questionText}>Have you followed a workout routine before?</Text>
-          {workoutBeforeChoices.map((choice, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.choice,
-                selectedWorkoutBefore === index && styles.choiceSelected,
-              ]}
-              onPress={() => setSelectedWorkoutBefore(index)}
-            >
-              <Text style={styles.choiceText}>{choice}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionText}>Availability</Text>
-        <View style={styles.question}>
-          <Text style={styles.questionText}>What weekdays are you available to workout?</Text>
-          {dayChoices.map((choice, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.choice,
-                selectedDays.includes(index) && styles.choiceSelected,
-              ]}
-              onPress={() => addChoice(index, selectedDays, setSelectedDays)}
-            >
-              <Text style={styles.choiceText}>{choice}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionText}>Equipment</Text>
-        <View style={styles.question}>
-          <Text style={styles.questionText}>What equipment do you have access to?</Text>
-          {equipmentChoices.map((choice, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.choice,
-                selectedEquipment.includes(index) && styles.choiceSelected,
-              ]}
-              onPress={() => addChoice(index, selectedEquipment, setSelectedEquipment)}
-            >
-              <Text style={styles.choiceText}>{choice}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
     </ScrollView>
   );
 }
@@ -164,54 +102,28 @@ export default function Fitness() {
 const styles = StyleSheet.create({
   main: {
     flex: 1,
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
     marginBottom: 100,
   },
-  textInput: {
+  createWorkoutButton: {
+    width: 300,
+    height: 60,
     borderWidth: 1,
-    borderColor: "gray",
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 16,
-    marginTop: 10,
-  },
-  question: {
-    paddingVertical: 10,
-  },
-  questionText: {
-    fontSize: 20,
-  },
-  bannerWrapper: {
-    justifyContent: "center",
+    borderRadius: 30,
+    borderColor: "green",
+    backgroundColor: "lightgreen",
     alignItems: "center",
-    borderBottomWidth: 1,
-    marginBottom: 10,
+    justifyContent: "center",
   },
-  bigText: {
-    fontSize: 40,
-    color: "black",
+  workoutsContainer: {
+    alignItems: "center",
   },
-  text: {
-    fontSize: 32,
-    color: "black",
-  },
-  section: {
-    marginBottom: 10,
-  },
-  sectionText: {
-    fontSize: 24,
-    fontWeight: "bold"
-  },
-  choice: {
-    padding: 15,
-    marginVertical: 8,
-    borderWidth: 1,
-    borderColor: "#aaa",
-    borderRadius: 8,
-    backgroundColor: "#fff",
-  },
-  choiceSelected: {
-    backgroundColor: "#a0d2eb",
-    borderColor: "#3399ff",
+  workout: {
+    width: "100%",
+    backgroundColor: "white",
+    elevation: 5,
+    borderRadius: 16,
+    padding: 10,
+    marginBottom: 20,
   },
 });
