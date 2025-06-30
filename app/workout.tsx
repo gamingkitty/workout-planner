@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
-import { useRouter } from "expo-router";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { useRouter, useFocusEffect } from "expo-router";
 import { Alert } from "react-native";
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { exerciseDescriptions, exerciseEquipment, useAppContext } from './AppContext';
@@ -125,12 +125,17 @@ export default function Workout() {
     });
   };
 
-  useEffect(() => {
-    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
-    return () => {
-      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
-    };
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      // When screen gains focus
+      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+
+      return () => {
+        // When screen loses focus
+        ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+      };
+    }, [])
+  );
 
   useEffect(() => {
     let interval;

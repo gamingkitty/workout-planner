@@ -37,7 +37,7 @@ export default function TabsLayout() {
   return (
     <View style={styles.main}>
       <View style={styles.banner}>
-        <View style={{marginTop: 10, justifyContent: "center", alignItems: "flex-start"}}>
+        <View style={{marginTop: 30, justifyContent: "center", alignItems: "flex-start"}}>
           <TouchableOpacity onPress={toggleMenu}>
             <Image
               source={require('../../assets/images/menu.png')}
@@ -45,10 +45,10 @@ export default function TabsLayout() {
             />
           </TouchableOpacity>
         </View>
-        <View style={{marginTop: 10, justifyContent: "center", alignItems: "center", flex: 1}}>
+        <View style={{marginTop: 30, justifyContent: "center", alignItems: "center", flex: 1}}>
           <Text style={styles.text}>App Name</Text>
         </View>
-        <View style={{marginTop: 10, marginRight: 10, justifyContent: "center", alignItems: "flex-end"}}>
+        <View style={{marginTop: 30, marginRight: 10, justifyContent: "center", alignItems: "flex-end"}}>
           <TouchableOpacity>
             <Image
               source={require('../../assets/images/user-icon.png')}
@@ -74,6 +74,9 @@ export default function TabsLayout() {
         <View style={{flexDirection: "column", flex: 1}}>
           <TouchableOpacity onPress={() => router.push("/workout")}>
             <Text style={styles.bigText}>Workout</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push("/quiz")}>
+            <Text style={styles.bigText}>Quiz</Text>
           </TouchableOpacity>
         </View>
       </Animated.View>
@@ -118,7 +121,7 @@ const styles = StyleSheet.create({
   },
   banner: {
     backgroundColor: "lightgray",
-    height: 60,
+    height: 80,
     borderBottomWidth: 1,
     borderBottomColor: "gray",
     flexDirection: "row",

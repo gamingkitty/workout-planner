@@ -6,7 +6,7 @@ import {View} from "react-native";
 export default function RootLayout() {
   return (
     <AppProvider>
-      <Stack />
+      <Stack screenOptions={{ headerShown: false }}/>
     </AppProvider>
   );
 }
