@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { useAppContext } from '../AppContext';
 import {
   View,
   Text,
@@ -29,11 +30,11 @@ function getNextMonth(month: number, year: number) {
   return { month: month + 1, year };
 }
 
-const WORKOUTS: {[date: string]: string[]} = {
-  "2025-06-15": ["Chest & Triceps", "Pushups & Bench Press"],
-  "2025-06-22": ["Cardio", "5k Run"],
-  "2025-06-28": ["Leg day", "Box Jumps & Weighted Squats"]
-}
+// const WORKOUTS: {[date: string]: string[]} = {
+//   "2025-06-15": ["Chest & Triceps", "Pushups & Bench Press"],
+//   "2025-06-22": ["Cardio", "5k Run"],
+//   "2025-06-28": ["Leg day", "Box Jumps & Weighted Squats"]
+// }
 
 export default function Index() {
   const today = new Date()
@@ -48,6 +49,16 @@ export default function Index() {
   const currMonthLen = getMonthLen(currMonth, currYear)
   const firstDayOfMonth = new Date(currYear, currMonth, 1)
   const firstDayOffset = firstDayOfMonth.getDay()
+
+  const {workouts, setWorkouts} = useAppContext();
+  const WORKOUTS = {}
+
+  workouts.forEach((workout) => {
+    if (!WORKOUTS[workout.date]) {
+      WORKOUTS[workout.date] = [];
+    }
+    WORKOUTS[workout.date].push(workout.name);
+  });
 
   const dayObjs = []
 

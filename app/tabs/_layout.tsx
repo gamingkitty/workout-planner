@@ -1,5 +1,6 @@
 import { Slot, useRouter } from "expo-router";
 import React, { useState, useRef, useEffect } from "react";
+import { AppProvider } from '../AppContext';
 import {
   View,
   Text,
@@ -34,34 +35,10 @@ export default function TabsLayout() {
   };
 
   return (
-    <View style={styles.main}>
-      <View style={styles.banner}>
-        <View style={{marginTop: 30, justifyContent: "center", alignItems: "flex-start"}}>
-          <TouchableOpacity onPress={toggleMenu}>
-            <Image
-              source={require('../../assets/images/menu.png')}
-              style={{width: 55, height: 55}}
-            />
-          </TouchableOpacity>
-        </View>
-        <View style={{marginTop: 30, justifyContent: "center", alignItems: "center", flex: 1}}>
-          <Text style={styles.text}>App Name</Text>
-        </View>
-        <View style={{marginTop: 30, marginRight: 10, justifyContent: "center", alignItems: "flex-end"}}>
-          <TouchableOpacity>
-            <Image
-              source={require('../../assets/images/user-icon.png')}
-              style={{width: 40, height: 40}}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <Slot/>
-
-      <Animated.View style={[styles.menu, {left: menuAnim}]}>
+    <AppProvider>
+      <View style={styles.main}>
         <View style={styles.banner}>
-          <View style={{marginTop: 30, justifyContent: "center", flex: 1, alignItems: "flex-end"}}>
+          <View style={{marginTop: 30, justifyContent: "center", alignItems: "flex-start"}}>
             <TouchableOpacity onPress={toggleMenu}>
               <Image
                 source={require('../../assets/images/menu.png')}
@@ -69,44 +46,70 @@ export default function TabsLayout() {
               />
             </TouchableOpacity>
           </View>
+          <View style={{marginTop: 30, justifyContent: "center", alignItems: "center", flex: 1}}>
+            <Text style={styles.text}>App Name</Text>
+          </View>
+          <View style={{marginTop: 30, marginRight: 10, justifyContent: "center", alignItems: "flex-end"}}>
+            <TouchableOpacity>
+              <Image
+                source={require('../../assets/images/user-icon.png')}
+                style={{width: 40, height: 40}}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
-        <View style={{flexDirection: "column", flex: 1}}>
-          <TouchableOpacity onPress={() => router.push("/workout")}>
-            <Text style={styles.bigText}>Workout</Text>
+
+        <Slot/>
+
+        <Animated.View style={[styles.menu, {left: menuAnim}]}>
+          <View style={styles.banner}>
+            <View style={{marginTop: 30, justifyContent: "center", flex: 1, alignItems: "flex-end"}}>
+              <TouchableOpacity onPress={toggleMenu}>
+                <Image
+                  source={require('../../assets/images/menu.png')}
+                  style={{width: 55, height: 55}}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+          <View style={{flexDirection: "column", flex: 1}}>
+            <TouchableOpacity onPress={() => router.push("/workout")}>
+              <Text style={styles.bigText}>Workout</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+
+        <Animated.View pointerEvents={menuVisible ? "auto" : "none"} style={[styles.grayOut, {opacity: grayAnim}]}/>
+
+        <View style={styles.footer}>
+          <TouchableOpacity style={styles.footerButton} onPress={() => router.push("/tabs/calendar")}>
+            <Image
+              source={require('../../assets/images/calendar-icon.jpg')}
+              style={styles.footerIcon}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.footerButton} onPress={() => router.push("/tabs/fitness")}>
+            <Image
+              source={require('../../assets/images/dumbell.png')}
+              style={styles.footerIcon}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.footerButton} onPress={() => router.push("/tabs/diet")}>
+            <Image
+              source={require('../../assets/images/food.png')}
+              style={styles.footerIcon}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.footerButton} onPress={() => router.push("/tabs/points")}>
+            <Image
+              source={require('../../assets/images/shop.png')}
+              style={styles.footerIcon}
+            />
           </TouchableOpacity>
         </View>
-      </Animated.View>
-
-      <Animated.View pointerEvents={menuVisible ? "auto" : "none"} style={[styles.grayOut, {opacity: grayAnim}]}/>
-
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.footerButton} onPress={() => router.push("/tabs/calendar")}>
-          <Image
-            source={require('../../assets/images/calendar-icon.jpg')}
-            style={styles.footerIcon}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton} onPress={() => router.push("/tabs/fitness")}>
-          <Image
-            source={require('../../assets/images/dumbell.png')}
-            style={styles.footerIcon}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton} onPress={() => router.push("/tabs/diet")}>
-          <Image
-            source={require('../../assets/images/food.png')}
-            style={styles.footerIcon}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton} onPress={() => router.push("/tabs/points")}>
-          <Image
-            source={require('../../assets/images/shop.png')}
-            style={styles.footerIcon}
-          />
-        </TouchableOpacity>
+        <View style={{position: "absolute", bottom: 0, left: 0, right: 0, height: 50, backgroundColor: "gray"}}></View>
       </View>
-      <View style={{position: "absolute", bottom: 0, left: 0, right: 0, height: 50, backgroundColor: "gray"}}></View>
-    </View>
+    </AppProvider>
   );
 }
 
