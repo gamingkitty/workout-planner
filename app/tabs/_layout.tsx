@@ -62,7 +62,16 @@ export default function TabsLayout() {
 
       <Animated.View style={[styles.menu, {left: menuAnim}]}>
         <View style={styles.banner}>
-          <View style={{marginTop: 10, justifyContent: "center", flex: 1, alignItems: "flex-end"}}>
+          <View style={{marginTop: 30, justifyContent: "space-between", flex: 1, flexDirection: "row", alignItems: "center"}}>
+            <TouchableOpacity onPress={() => {
+                  toggleMenu;
+                  router.push("/home")
+                }}>
+              <Image
+                source={require('../../assets/images/home-icon.png')}
+                style={{width: 50, height: 50}}
+              />
+            </TouchableOpacity>
             <TouchableOpacity onPress={toggleMenu}>
               <Image
                 source={require('../../assets/images/menu.png')}
