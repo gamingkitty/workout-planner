@@ -35,10 +35,34 @@ export default function TabsLayout() {
   };
 
   return (
-    <AppProvider>
-      <View style={styles.main}>
+    <View style={styles.main}>
+      <View style={styles.banner}>
+        <View style={{marginTop: 10, justifyContent: "center", alignItems: "flex-start"}}>
+          <TouchableOpacity onPress={toggleMenu}>
+            <Image
+              source={require('../../assets/images/menu.png')}
+              style={{width: 55, height: 55}}
+            />
+          </TouchableOpacity>
+        </View>
+        <View style={{marginTop: 10, justifyContent: "center", alignItems: "center", flex: 1}}>
+          <Text style={styles.text}>App Name</Text>
+        </View>
+        <View style={{marginTop: 10, marginRight: 10, justifyContent: "center", alignItems: "flex-end"}}>
+          <TouchableOpacity>
+            <Image
+              source={require('../../assets/images/user-icon.png')}
+              style={{width: 40, height: 40}}
+            />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+        <Slot/>
+
+      <Animated.View style={[styles.menu, {left: menuAnim}]}>
         <View style={styles.banner}>
-          <View style={{marginTop: 30, justifyContent: "center", alignItems: "flex-start"}}>
+          <View style={{marginTop: 10, justifyContent: "center", flex: 1, alignItems: "flex-end"}}>
             <TouchableOpacity onPress={toggleMenu}>
               <Image
                 source={require('../../assets/images/menu.png')}
@@ -46,38 +70,13 @@ export default function TabsLayout() {
               />
             </TouchableOpacity>
           </View>
-          <View style={{marginTop: 30, justifyContent: "center", alignItems: "center", flex: 1}}>
-            <Text style={styles.text}>App Name</Text>
-          </View>
-          <View style={{marginTop: 30, marginRight: 10, justifyContent: "center", alignItems: "flex-end"}}>
-            <TouchableOpacity>
-              <Image
-                source={require('../../assets/images/user-icon.png')}
-                style={{width: 40, height: 40}}
-              />
-            </TouchableOpacity>
-          </View>
         </View>
-
-        <Slot/>
-
-        <Animated.View style={[styles.menu, {left: menuAnim}]}>
-          <View style={styles.banner}>
-            <View style={{marginTop: 30, justifyContent: "center", flex: 1, alignItems: "flex-end"}}>
-              <TouchableOpacity onPress={toggleMenu}>
-                <Image
-                  source={require('../../assets/images/menu.png')}
-                  style={{width: 55, height: 55}}
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-          <View style={{flexDirection: "column", flex: 1}}>
-            <TouchableOpacity onPress={() => router.push("/workout")}>
-              <Text style={styles.bigText}>Workout</Text>
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
+        <View style={{flexDirection: "column", flex: 1}}>
+          <TouchableOpacity onPress={() => router.push("/workout")}>
+            <Text style={styles.bigText}>Workout</Text>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
 
         <Animated.View pointerEvents={menuVisible ? "auto" : "none"} style={[styles.grayOut, {opacity: grayAnim}]}/>
 
@@ -120,7 +119,7 @@ const styles = StyleSheet.create({
   },
   banner: {
     backgroundColor: "lightgray",
-    height: 80,
+    height: 60,
     borderBottomWidth: 1,
     borderBottomColor: "gray",
     flexDirection: "row",
