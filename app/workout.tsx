@@ -65,8 +65,6 @@ import {
 
 const initialReadyTime = 10;
 
-const currentWorkout = 1;
-
 export default function Workout() {
   const [seconds, setSeconds] = useState(initialReadyTime);
   const [isStarted, setIsStarted] = useState(false);
@@ -78,7 +76,7 @@ export default function Workout() {
   const router = useRouter();
   const slideY = useRef(new Animated.Value(0)).current;
 
-  const {workouts, setWorkouts} = useAppContext();
+  const {workouts, setWorkouts, currentWorkout, setCurrentWorkout} = useAppContext();
   const circuits = workouts[currentWorkout].circuit;
 
   async function playSound(asset, volume) {

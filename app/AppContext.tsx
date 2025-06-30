@@ -159,11 +159,19 @@ const testWorkouts = [
     }
 ]
 
+testWorkouts = testWorkouts.slice().sort((a, b) => {
+    const dateA = new Date(a.date);
+    const dateB = new Date(b.date);
+    return dateA.getTime() - dateB.getTime();
+  });
+
+
 export function AppProvider({ children }) {
   const [workouts, setWorkouts] = useState(testWorkouts);
+  const [currentWorkout, setCurrentWorkout] = useState(0);
 
   return (
-    <AppContext.Provider value={{ workouts, setWorkouts }}>
+    <AppContext.Provider value={{ workouts, setWorkouts, currentWorkout, setCurrentWorkout}}>
       {children}
     </AppContext.Provider>
   );
