@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { useRouter } from "expo-router";
 import {
   View,
   Text,
@@ -8,6 +9,7 @@ import {
   Image,
   TextInput,
   ScrollView,
+  Alert,
 } from "react-native";
 import { useAppContext } from '../AppContext';
 
@@ -40,7 +42,8 @@ function formatTime24to12(timeStr: string): string {
 }
 
 export default function Fitness() {
-  const {workouts, setWorkouts} = useAppContext();
+  const {workouts, setWorkouts, currentWorkout, setCurrentWorkout} = useAppContext();
+  const router = useRouter();
 
   const toggleDropdown = (index: number) => {
     setDropdownStates(prev =>
@@ -48,12 +51,7 @@ export default function Fitness() {
     );
   };
 
-  const sortedWorkouts = workouts.slice().sort((a, b) => {
-    const dateA = new Date(a.date);
-    const dateB = new Date(b.date);
-    return dateB.getTime() - dateA.getTime();
-  });
-
+  const sortedWorkouts = workouts
   const [dropdownStates, setDropdownStates] = useState<boolean[]>(() => sortedWorkouts.map(() => false));
 
   return (
@@ -86,7 +84,23 @@ export default function Fitness() {
                 ))}
               </View>
             )}
-            <TouchableOpacity style={{position: "absolute", bottom: 10, right: 10}}>
+            <TouchableOpacity style={{position: "absolute", bottom: 10, right: 10}} onPress={() => {
+              Alert.alert(
+                "Are you ready to start your workout?",
+                "",
+                [
+                  { text: "Cancel", style: "cancel" },
+                  {
+                    text: "Yes",
+                    onPress: () => {
+                      setCurrentWorkout(index);
+                      router.push("/workout");
+                    },
+                  },
+                ],
+                { cancelable: true }
+              )
+            }}>
               <Image
                 source={require('../../assets/images/start-workout.png')}
                 style={{width: 50, height: 50}}
