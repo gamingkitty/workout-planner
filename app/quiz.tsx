@@ -1,218 +1,418 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  Animated,
-  TouchableOpacity,
-  Image,
-  TextInput,
   ScrollView,
+  TextInput,
+  TouchableOpacity,
+  Modal,
+  Alert,
 } from "react-native";
+import { useRouter } from "expo-router";
 
 const sexChoices = ["Male", "Female", "Other"];
-const goalChoices = ["Lose Weight", "Build Muscle", "Improve Endurance", "Increase Flexibility", "Maintain Current Fitness", "Train for a Sport/Event"]
-const fitnessLevelChoices = ["Beginner", "Intermediate", "Advanced"]
-const workoutBeforeChoices = ["Never", "Occasionally", "Regularly"]
-const dayChoices = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-const equipmentChoices = ["Bench", "Barbell", "Dumbbells", "Bands", "Weighted Ball", "Balance Ball"]
+const goalChoices = [
+  "Lose Weight",
+  "Build Muscle",
+  "Improve Endurance",
+  "Increase Flexibility",
+  "Maintain Current Fitness",
+  "Train for a Sport/Event",
+];
+const fitnessLevelChoices = ["Beginner", "Intermediate", "Advanced"];
+const dayChoices = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
+const equipmentChoices = [
+  "Bench",
+  "Barbell",
+  "Dumbbells",
+  "Kettlebell",
+  "Resistance Bands",
+  "Weighted Ball",
+  "Medicine Ball",
+  "TRX",
+  "Pull-up Bar",
+  "Smith Machine",
+  "Cable Machine",
+  "Treadmill",
+  "Stationary Bike",
+  "Elliptical",
+  "Rowing Machine",
+  "Stair Climber",
+  "Foam Roller",
+  "Jump Rope",
+  "Yoga Blocks",
+  "Yoga Mat",
+  "Balance Ball",
+  "Plyo Box",
+  "None",
+];
+
+// Temporary store for workouts (can be moved to context later)
+const storedWorkouts = [];
 
 export default function Fitness() {
-  const [height, setHeight] = useState("");
-  const [weight, setWeight] = useState("");
-
+  const router = useRouter();
+  const [unit, setUnit] = useState("metric");
+  const [heightCm, setHeightCm] = useState("");
+  const [weightKg, setWeightKg] = useState("");
+  const [heightFt, setHeightFt] = useState("");
+  const [heightIn, setHeightIn] = useState("");
+  const [weightLbs, setWeightLbs] = useState("");
+  const [age, setAge] = useState("");
+  const [otherSexText, setOtherSexText] = useState("");
   const [selectedSex, setSelectedSex] = useState(null);
-  const [selectedFitnessLevel, setSelectedFitnessLevel] = useState(null);
-  const [selectedWorkoutBefore, setSelectedWorkoutBefore] = useState(null);
-
+  const [injuries, setInjuries] = useState("");
+  const [goalsNote, setGoalsNote] = useState("");
   const [selectedGoals, setSelectedGoals] = useState([]);
   const [selectedDays, setSelectedDays] = useState([]);
   const [selectedEquipment, setSelectedEquipment] = useState([]);
+  const [selectedFitnessLevel, setSelectedFitnessLevel] = useState(null);
+  const [fitnessLevelNote, setFitnessLevelNote] = useState("");
+  const [pastRoutineDesc, setPastRoutineDesc] = useState("");
+  const [confirmationVisible, setConfirmationVisible] = useState(false);
 
-  const addChoice = (index: number, list: any[], setList: { (value: React.SetStateAction<never[]>): void; (value: React.SetStateAction<never[]>): void; (value: React.SetStateAction<never[]>): void; (arg0: any[]): void; }) => {
+  const addChoice = (index, list, setList) => {
     if (list.includes(index)) {
-      setList(list.filter(i => i !== index));
+      setList(list.filter((i) => i !== index));
     } else {
       setList([...list, index]);
     }
   };
 
+  const isFormValid = () => {
+    if (
+        unit === "metric"
+            ? !heightCm || !weightKg
+            : !heightFt || !heightIn || !weightLbs
+    )
+      return false;
+    if (!age || selectedSex === null || (selectedSex === 2 && !otherSexText))
+      return false;
+    if (selectedGoals.length === 0 || selectedFitnessLevel === null)
+      return false;
+    if (selectedDays.length === 0 || selectedEquipment.length === 0)
+      return false;
+    return true;
+  };
+
+  const submitWorkoutPlan = () => {
+    if (!isFormValid()) {
+      Alert.alert("Missing Information", "Please fill out all required fields.");
+      return;
+    }
+
+    const date = new Date();
+    const measurements =
+        unit === "metric"
+            ? { height: `${heightCm} cm`, weight: `${weightKg} kg` }
+            : {
+              height: `${heightFt} ft ${heightIn} in`,
+              weight: `${weightLbs} lbs`,
+            };
+    const workout = {
+      date: date.toISOString().split("T")[0],
+      time: date.toTimeString().split(" ")[0],
+      name: "Generated Workout",
+      measurements,
+      circuit: [
+        {
+          workoutTime: 5,
+          breakTime: 2,
+          loops: 2,
+          exercises: [["Push Ups", {}], ["Squats", {}], ["Sit Ups", {}]],
+        },
+      ],
+    };
+    storedWorkouts.push(workout);
+    setConfirmationVisible(true);
+    setTimeout(() => {
+      setConfirmationVisible(false);
+      router.push("/tabs/fitness");
+    }, 1500);
+  };
+
   return (
-    <ScrollView style={styles.main}>
-      <View style={styles.bannerWrapper}>
-        <Text style={[styles.text, {textAlign: "center"}]}>Help Us Create The Perfect Workout Plan For You</Text>
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.sectionText}>Basic Information</Text>
-        <View style={styles.question}>
-          <Text style={styles.questionText}>What is your height and weight?</Text>
-          <TextInput style={styles.choice} keyboardType="numeric" value={height} onChangeText={setHeight} placeholder="Enter your height (cm)"/>
-          <TextInput style={styles.choice} keyboardType="numeric" value={weight} onChangeText={setWeight} placeholder="Enter your weight (kg)"/>
-        </View>
-        <View style={styles.question}>
-          <Text style={styles.questionText}>What is your biological sex?</Text>
-          {sexChoices.map((choice, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.choice,
-                selectedSex === index && styles.choiceSelected,
-              ]}
-              onPress={() => setSelectedSex(index)}
-            >
-              <Text style={styles.choiceText}>{choice}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-       </View>
+      <View style={{ flex: 1 }}>
+        <ScrollView style={styles.main}>
+          <Text style={styles.title}>Create Your Workout Plan</Text>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionText}>Fitness Goals</Text>
-        <View style={styles.question}>
-          <Text style={styles.questionText}>What is your primary fitness goal? (Select one or more)</Text>
-          {goalChoices.map((choice, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.choice,
-                selectedGoals.includes(index) && styles.choiceSelected,
-              ]}
-              onPress={() => addChoice(index, selectedGoals, setSelectedGoals)}
-            >
-              <Text style={styles.choiceText}>{choice}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
+          {/* Basic Info Section */}
+          <View style={styles.section}>
+            <Text style={styles.question}>
+              Measurements
+              <Text style={{color: "red"}}>*</Text>
+            </Text>
+            <View style={styles.row}>
+              <TouchableOpacity
+                  style={[styles.unitButton, unit === "metric" && styles.unitSelected]}
+                  onPress={() => setUnit("metric")}
+              >
+                <Text>Metric</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                  style={[styles.unitButton, unit === "imperial" && styles.unitSelected]}
+                  onPress={() => setUnit("imperial")}
+              >
+                <Text>Imperial</Text>
+              </TouchableOpacity>
+            </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionText}>Experience Level</Text>
-        <View style={styles.question}>
-          <Text style={styles.questionText}>How would you rate your current fitness level?</Text>
-          {fitnessLevelChoices.map((choice, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.choice,
-                selectedFitnessLevel === index && styles.choiceSelected,
-              ]}
-              onPress={() => setSelectedFitnessLevel(index)}
-            >
-              <Text style={styles.choiceText}>{choice}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-        <View style={styles.question}>
-          <Text style={styles.questionText}>Have you followed a workout routine before?</Text>
-          {workoutBeforeChoices.map((choice, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.choice,
-                selectedWorkoutBefore === index && styles.choiceSelected,
-              ]}
-              onPress={() => setSelectedWorkoutBefore(index)}
-            >
-              <Text style={styles.choiceText}>{choice}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
+            {unit === "metric" ? (
+                <>
+                  <TextInput
+                      style={styles.input}
+                      placeholder="Height (cm)"
+                      keyboardType="numeric"
+                      value={heightCm}
+                      onChangeText={setHeightCm}
+                  />
+                  <TextInput
+                      style={styles.input}
+                      placeholder="Weight (kg)"
+                      keyboardType="numeric"
+                      value={weightKg}
+                      onChangeText={setWeightKg}
+                  />
+                </>
+            ) : (
+                <>
+                  <View style={styles.row}>
+                    <TextInput
+                        style={[styles.input, styles.halfInput]}
+                        placeholder="Height (ft)"
+                        keyboardType="numeric"
+                        value={heightFt}
+                        onChangeText={setHeightFt}
+                    />
+                    <TextInput
+                        style={[styles.input, styles.halfInput]}
+                        placeholder="Height (in)"
+                        keyboardType="numeric"
+                        value={heightIn}
+                        onChangeText={setHeightIn}
+                    />
+                  </View>
+                  <TextInput
+                      style={styles.input}
+                      placeholder="Weight (lbs)"
+                      keyboardType="numeric"
+                      value={weightLbs}
+                      onChangeText={setWeightLbs}
+                  />
+                </>
+            )}
 
-      <View style={styles.section}>
-        <Text style={styles.sectionText}>Availability</Text>
-        <View style={styles.question}>
-          <Text style={styles.questionText}>What weekdays are you available to workout?</Text>
-          {dayChoices.map((choice, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.choice,
-                selectedDays.includes(index) && styles.choiceSelected,
-              ]}
-              onPress={() => addChoice(index, selectedDays, setSelectedDays)}
-            >
-              <Text style={styles.choiceText}>{choice}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
+            <TextInput
+                style={styles.input}
+                placeholder="Age"
+                keyboardType="numeric"
+                value={age}
+                onChangeText={setAge}
+            />
 
-      <View style={styles.section}>
-        <Text style={styles.sectionText}>Equipment</Text>
-        <View style={styles.question}>
-          <Text style={styles.questionText}>What equipment do you have access to?</Text>
-          {equipmentChoices.map((choice, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.choice,
-                selectedEquipment.includes(index) && styles.choiceSelected,
-              ]}
-              onPress={() => addChoice(index, selectedEquipment, setSelectedEquipment)}
-            >
-              <Text style={styles.choiceText}>{choice}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
+            <Text style={styles.question}>
+              Biological Sex
+              <Text style={{color: "red"}}>*</Text>
+            </Text>
+            {sexChoices.map((choice, index) => (
+                <TouchableOpacity
+                    key={index}
+                    style={[styles.choice, selectedSex === index && styles.selected]}
+                    onPress={() => setSelectedSex(index)}
+                >
+                  <Text>{choice}</Text>
+                </TouchableOpacity>
+            ))}
+            {selectedSex === 2 && (
+                <TextInput
+                    style={styles.input}
+                    placeholder="Please specify"
+                    value={otherSexText}
+                    onChangeText={setOtherSexText}
+                />
+            )}
 
-    </ScrollView>
+            <Text style={styles.question}>Past Injuries (Optional)</Text>
+            <TextInput
+                style={styles.input}
+                placeholder="Any past injuries or conditions?"
+                value={injuries}
+                onChangeText={setInjuries}
+            />
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.question}>
+              Fitness Goals
+              <Text style={{color: "red"}}>*</Text>
+            </Text>
+            {goalChoices.map((choice, index) => (
+                <TouchableOpacity
+                    key={index}
+                    style={[styles.choice, selectedGoals.includes(index) && styles.selected]}
+                    onPress={() => addChoice(index, selectedGoals, setSelectedGoals)}
+                >
+                  <Text>{choice}</Text>
+                </TouchableOpacity>
+            ))}
+            <TextInput
+                style={styles.input}
+                placeholder="Explain more (optional)"
+                value={goalsNote}
+                onChangeText={setGoalsNote}
+            />
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.question}>
+              Experience Level
+              <Text style={{color: "red"}}>*</Text>
+            </Text>
+            {fitnessLevelChoices.map((choice, index) => (
+                <TouchableOpacity
+                    key={index}
+                    style={[styles.choice, selectedFitnessLevel === index && styles.selected]}
+                    onPress={() => setSelectedFitnessLevel(index)}
+                >
+                  <Text>{choice}</Text>
+                </TouchableOpacity>
+            ))}
+            <TextInput
+                style={styles.input}
+                placeholder="Explain more (optional)"
+                value={fitnessLevelNote}
+                onChangeText={setFitnessLevelNote}
+            />
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.question}>Have you followed any workout plans before? Describe it:</Text>
+            <TextInput
+                style={styles.input}
+                placeholder="e.g. I used to do full-body workouts 3x a week"
+                value={pastRoutineDesc}
+                onChangeText={setPastRoutineDesc}
+            />
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.question}>
+              Available Days
+              <Text style={{color: "red"}}>*</Text>
+            </Text>
+            {dayChoices.map((choice, index) => (
+                <TouchableOpacity
+                    key={index}
+                    style={[styles.choice, selectedDays.includes(index) && styles.selected]}
+                    onPress={() => addChoice(index, selectedDays, setSelectedDays)}
+                >
+                  <Text>{choice}</Text>
+                </TouchableOpacity>
+            ))}
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.question}>
+              Available Equipment
+              <Text style={{color: "red"}}>*</Text>
+            </Text>
+            {equipmentChoices.map((choice, index) => (
+                <TouchableOpacity
+                    key={index}
+                    style={[styles.choice, selectedEquipment.includes(index) && styles.selected]}
+                    onPress={() => addChoice(index, selectedEquipment, setSelectedEquipment)}
+                >
+                  <Text>{choice}</Text>
+                </TouchableOpacity>
+            ))}
+          </View>
+
+          <TouchableOpacity style={styles.submitButton} onPress={submitWorkoutPlan}>
+            <Text style={styles.submitText}>Submit Plan</Text>
+          </TouchableOpacity>
+        </ScrollView>
+
+        <Modal transparent visible={confirmationVisible} animationType="fade">
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalBox}>
+              <Text style={styles.modalText}>✅ Created new workout from given information!</Text>
+            </View>
+          </View>
+        </Modal>
+      </View>
   );
 }
 
 const styles = StyleSheet.create({
-  main: {
-    flex: 1,
-    paddingHorizontal: 10,
-    marginTop: 30,
-    marginBottom: 40,
-  },
-  textInput: {
+  main: { flex: 1, padding: 16 },
+  title: { fontSize: 24, fontWeight: "bold", marginTop: 40 },
+  section: { marginBottom: 24 },
+  question: { fontSize: 18, fontWeight: "600", marginBottom: 8, marginTop: 16 },
+  required: { fontSize: 18, fontWeight: "600", marginBottom: 8, marginTop: 16, color: "red" },
+  input: {
     borderWidth: 1,
-    borderColor: "gray",
+    borderColor: "#ccc",
+    padding: 10,
+    marginVertical: 6,
+    borderRadius: 8,
+  },
+  row: { flexDirection: "row", gap: 12, marginBottom: 8 },
+  halfInput: { flex: 1 },
+  unitButton: {
+    borderWidth: 1,
+    borderColor: "#ccc",
     borderRadius: 8,
     padding: 10,
-    fontSize: 16,
-    marginTop: 10,
-  },
-  question: {
-    paddingVertical: 10,
-  },
-  questionText: {
-    fontSize: 20,
-  },
-  bannerWrapper: {
-    justifyContent: "center",
+    flex: 1,
     alignItems: "center",
-    borderBottomWidth: 1,
-    marginBottom: 10,
   },
-  bigText: {
-    fontSize: 40,
-    color: "black",
-  },
-  text: {
-    fontSize: 32,
-    color: "black",
-  },
-  section: {
-    marginBottom: 10,
-  },
-  sectionText: {
-    fontSize: 24,
-    fontWeight: "bold"
-  },
+  unitSelected: { backgroundColor: "#def" },
   choice: {
-    padding: 15,
-    marginVertical: 8,
     borderWidth: 1,
     borderColor: "#aaa",
     borderRadius: 8,
-    backgroundColor: "#fff",
+    padding: 10,
+    marginVertical: 4,
   },
-  choiceSelected: {
-    backgroundColor: "#a0d2eb",
-    borderColor: "#3399ff",
+  selected: {
+    backgroundColor: "#cdf",
+    borderColor: "#66f",
+  },
+  submitButton: {
+    backgroundColor: "#337ab7",
+    padding: 14,
+    borderRadius: 8,
+    alignItems: "center",
+    marginBottom: 30,
+  },
+  submitText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+  },
+  modalBox: {
+    backgroundColor: "white",
+    borderRadius: 12,
+    padding: 24,
+    elevation: 4,
+  },
+  modalText: {
+    fontSize: 18,
+    textAlign: "center",
   },
 });
