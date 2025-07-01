@@ -62,7 +62,7 @@ export default function Fitness() {
         </TouchableOpacity>
       </View>
       <View style={styles.workoutsContainer}>
-        <Text style={{fontSize: 32}}>Upcoming Workouts</Text>
+        <Text style={{fontSize: 32, marginBottom: 10}}>Upcoming Workouts</Text>
         {sortedWorkouts.map((workout, index) => (
           <View key={index} style={styles.workout}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
@@ -128,6 +128,8 @@ const styles = StyleSheet.create({
     backgroundColor: "lightgreen",
     alignItems: "center",
     justifyContent: "center",
+    marginTop: 20,
+    marginBottom: 20,
   },
   workoutsContainer: {
     alignItems: "center",
