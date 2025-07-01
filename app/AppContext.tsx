@@ -144,7 +144,7 @@ const testCircuit = [
     },
 ];
 
-const testWorkouts = [
+let testWorkouts = [
     {
         date: "2025-06-15",
         time: "16:30",
